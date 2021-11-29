@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class RubyController : MonoBehaviour
 {
@@ -10,7 +12,7 @@ public class RubyController : MonoBehaviour
     public float timeInvincible = 2.0f;
 
     public int health {get { return currentHealth; }}
-    int currentHealth;
+    public int currentHealth;
 
     bool isInvincible;
     float invincibleTimer;
@@ -25,10 +27,23 @@ public class RubyController : MonoBehaviour
     public GameObject projectilePrefab;
 
     public ParticleSystem hurtEffect;
+    public ParticleSystem healEffect;
 
     private AudioSource audioSource;
     public AudioClip throwClip;
     public AudioClip hurtClip;
+
+    public Text scoreText;
+    public int score = 0;
+
+    public Text resultText;
+
+    private bool gameOver = false;
+
+    public static int level;
+
+    public int cogAmmo = 4;
+    public Text cogText;
 
     // Start is called before the first frame update
     void Start()
@@ -39,6 +54,12 @@ public class RubyController : MonoBehaviour
         animator = GetComponent<Animator>();
 
         audioSource = GetComponent<AudioSource>();
+
+        scoreText.text = "Fixed Robots: " + score.ToString();
+        resultText.text = " ";
+        cogText.text = "Cogs: " + cogAmmo.ToString();
+
+        timeInvincible = 2.0f;
     }
 
     // Update is called once per frame
@@ -73,9 +94,12 @@ public class RubyController : MonoBehaviour
             }
         }
 
-        if(Input.GetKeyDown(KeyCode.C))
+        if (cogAmmo > 0)
         {
+            if(Input.GetKeyDown(KeyCode.C))
+            {
             Launch();
+            }
         }
 
         if (Input.GetKeyDown(KeyCode.X))
@@ -86,8 +110,42 @@ public class RubyController : MonoBehaviour
                 NonPlayerCharacter character = hit.collider.GetComponent<NonPlayerCharacter>();
                 if (character != null)
                 {
+                    if(score == 4)
+                    {
+                        SceneManager.LoadScene("Level-2");
+                        level = 2;
+                    }
+
                     character.DisplayDialog();
                 }
+            }
+        }
+
+        if (score == 4)
+        {
+            resultText.text = "Talk to Jambi, your frog friend, to visit Stage 2!";
+        }
+
+        if (score == 4 & level == 2)
+        {
+            resultText.text = "Good fixing! You Win! Game by David :) Press R to restart";
+            speed = 0;
+            gameOver = true;
+        }
+
+        if (currentHealth == 0)
+        {
+            resultText.text = "Too bad! You Lose! Press R to restart";
+            speed = 0;
+            timeInvincible = 500.0f;
+            gameOver = true;
+        }
+
+        if (Input.GetKey(KeyCode.R))
+        {
+            if (gameOver == true)
+            {
+                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
         }
     }
@@ -114,10 +172,21 @@ public class RubyController : MonoBehaviour
             hurtEffect.Play();
             audioSource.PlayOneShot(hurtClip);
         }
+        if (amount > 0)
+        {
+            healEffect.Play();
+        }
         
         currentHealth = Mathf.Clamp(currentHealth + amount, 0, maxHealth);
         UIHealthBar.instance.SetValue(currentHealth / (float)maxHealth);
     }
+
+    public void ChangeScore (int amount)
+    {
+        score += 1;
+        scoreText.text = "Fixed Robots: " + score.ToString();
+    }
+
 
     void Launch()
     {
@@ -128,10 +197,22 @@ public class RubyController : MonoBehaviour
 
         animator.SetTrigger("Launch");
         audioSource.PlayOneShot(throwClip);
+        cogAmmo -= 1;
+        cogText.text = "Cogs: " + cogAmmo.ToString();
     }
 
     public void PlaySound(AudioClip clip)
     {
         audioSource.PlayOneShot(clip);
+    }
+
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        if(collision.collider.tag == "Ammo")
+        {
+            cogAmmo = cogAmmo + 4;
+            cogText.text = "Cogs: " + cogAmmo.ToString();
+            Destroy(collision.collider.gameObject);
+        }
     }
 }
