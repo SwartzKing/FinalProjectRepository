@@ -28,10 +28,16 @@ public class RubyController : MonoBehaviour
 
     public ParticleSystem hurtEffect;
     public ParticleSystem healEffect;
+    public ParticleSystem reloadEffect;
+    public ParticleSystem speedEffect;
+    
 
     private AudioSource audioSource;
     public AudioClip throwClip;
     public AudioClip hurtClip;
+    public AudioClip reloadClip;
+    public AudioClip powerupClip;
+    public AudioClip talkClip;
 
     public Text scoreText;
     public int score = 0;
@@ -115,7 +121,8 @@ public class RubyController : MonoBehaviour
                         SceneManager.LoadScene("Level-2");
                         level = 2;
                     }
-
+                    
+                    audioSource.PlayOneShot(talkClip);
                     character.DisplayDialog();
                 }
             }
@@ -212,7 +219,18 @@ public class RubyController : MonoBehaviour
         {
             cogAmmo = cogAmmo + 4;
             cogText.text = "Cogs: " + cogAmmo.ToString();
+            audioSource.PlayOneShot(reloadClip);
             Destroy(collision.collider.gameObject);
+            reloadEffect.Play();
+        }
+
+        if(collision.collider.tag == "Powerup")
+        {
+            speed = speed + 2;
+            Destroy(collision.collider.gameObject);
+            audioSource.PlayOneShot(powerupClip);
+            speedEffect.Play();
+            
         }
     }
 }

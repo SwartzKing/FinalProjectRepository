@@ -6,6 +6,8 @@ TagManager:
   tags:
   - RubyController
   - Ammo
+  - Powerup
+  - oilSpill
   layers:
   - Default
   - TransparentFX
@@ -19,7 +21,7 @@ TagManager:
   - Projectile
   - Confiner
   - NPC
-  - 
+  - Effects
   - 
   - 
   - 
